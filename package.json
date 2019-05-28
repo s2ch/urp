@@ -1,0 +1,25 @@
+{
+  "name": "urp",
+  "version": "1.0.0",
+  "description": "IRC game",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/s2ch/urp.git"
+  },
+  "author": "brs",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/s2ch/urp/issues"
+  },
+  "homepage": "https://github.com/s2ch/urp#readme",
+  "dependencies": {
+    "cheerio": "^1.0.0-rc.3",
+    "express": "^4.17.1",
+    "irc": "^0.5.2",
+    "nodemon": "^1.19.1"
+  }
+}
