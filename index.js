@@ -7,7 +7,7 @@
   const irc     = require("irc");
 
   const score      = require("./lib/game_score.js");
-  const scoreBoard = new score.scoreBoard('score.json');
+  const scoreBoard = score.scoreBoard;
 
   const gameData = { answer: { index: 0, desc: "" }, answerChoices: {}, photoUrl: {} };
   const timerNum = 45;
@@ -155,7 +155,7 @@
       sasl: true,
       selfSigned: true,
       certExpired: true,
-      channels: ['#s2ch'],
+      channels: ['#carmackTest'],
       port: 6697,
       autoRejoin: true,
       floodProtection: false,
@@ -226,8 +226,8 @@
       if (userList.block.indexOf(from) > -1) {
         client.say(to, `${from}, жди окончания раунда!`);
       } else {
-        userList.block.push(from);
         scoreBoard.setNewItem("freenode", "users", from);
+        userList.block.push(from);
 
         if ( parseInt(message.match(/\d/)[0], 10) === gameData.answer.index) {
           userList.winners.push(from);
