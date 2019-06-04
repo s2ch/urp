@@ -117,7 +117,7 @@
 
     return new Promise(function (resolve, reject) {
       getResumePageData().then(data => {
-        let randGenderRow = data[randMinMax(0, 1)];
+        let randGenderRow = data[randMinMax(0, 2)];
         let randEntry     = randGenderRow[randMinMax(0, randGenderRow.length - 1)];
         let arrAnswers    = [randEntry.title];
 
