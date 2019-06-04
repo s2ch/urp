@@ -155,7 +155,7 @@
       sasl: true,
       selfSigned: true,
       certExpired: true,
-      channels: ['#carmackTest'],
+      channels: ['#s2ch'],
       port: 6697,
       autoRejoin: true,
       floodProtection: false,
