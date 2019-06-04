@@ -41,7 +41,7 @@
         randIndx = Math.floor(Math.random() * elems.length);
         if (indxCollection.indexOf(randIndx) > -1) {
           i--;
-          break;
+          continue;
         }
 
         if (randElems.indexOf(elems[randIndx] < 0)) {
