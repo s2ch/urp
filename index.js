@@ -6,8 +6,8 @@
   const fs      = require("fs");
   const irc     = require("irc");
 
-  const score      = require("./lib/game_score");
-  const scoreBoard = new score.scoreBoard();
+  const score      = require("./lib/game_score.js");
+  const scoreBoard = new score.scoreBoard('score.json');
 
   const gameData = { answer: { index: 0, desc: "" }, answerChoices: {}, photoUrl: {} };
   const timerNum = 45;
@@ -227,6 +227,7 @@
         client.say(to, `${from}, жди окончания раунда!`);
       } else {
         userList.block.push(from);
+        scoreBoard.setNewItem("freenode", "users", from);
 
         if ( parseInt(message.match(/\d/)[0], 10) === gameData.answer.index) {
           userList.winners.push(from);
