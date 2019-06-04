@@ -10,7 +10,7 @@
   const scoreBoard = score.scoreBoard;
 
   const gameData = { answer: { index: 0, desc: "" }, answerChoices: {}, photoUrl: {} };
-  const timerNum = 45;
+  const timerNum = 30;
   const arrHelp  = [
     "Игра «Угадай работу пидора по фото» v. 0.0.9",
     "!urp - запустить раунда.",
@@ -39,7 +39,6 @@
     for (let i = 0; i < cnt; i++) {
       while(true) {
         randIndx = Math.floor(Math.random() * elems.length);
-
         if (indxCollection.indexOf(randIndx) > -1) {
           i--;
           break;
@@ -122,7 +121,7 @@
         let randEntry     = randGenderRow[randMinMax(0, randGenderRow.length - 1)];
         let arrAnswers    = [randEntry.title];
 
-        getRandElemsWoRepeats(4, randGenderRow, randEntry).map((e, i) => arrAnswers.push(e.title));
+        getRandElemsWoRepeats(2, randGenderRow, randEntry).map((e, i) => arrAnswers.push(e.title));
         arrAnswers = shuffleArray(arrAnswers);
         headers.url = `https://www.avito.ru${randEntry.href}`;
 
@@ -209,7 +208,7 @@
         }, timerNum * 1000);
       } else {
         if ( message.match(/^!urp$/) ) {
-          client.say(to, `До окончания раунда меньше ${timerNum} секунд.`);
+          //client.say(to, `До окончания раунда меньше ${timerNum} секунд.`);
         }
       }
     }
@@ -224,7 +223,7 @@
       }
 
       if (userList.block.indexOf(from) > -1) {
-        client.say(to, `${from}, жди окончания раунда!`);
+        //client.say(to, `${from}, жди окончания раунда!`);
       } else {
         scoreBoard.setNewItem("freenode", "users", from);
         userList.block.push(from);
