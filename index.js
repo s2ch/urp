@@ -6,11 +6,12 @@
   const fs      = require("fs");
   const irc     = require("irc");
 
-  const score      = require("./lib/game_score.js");
+  const score      = require("./lib/game_score");
   const scoreBoard = score.scoreBoard;
 
   const gameData = { answer: { index: 0, desc: "" }, answerChoices: {}, photoUrl: {} };
-  const timerNum = 60;
+  const timerNum = 60; // timer value in seconds
+  const additionalElems = 4; // additional elements in array, right answer plus this amount of additional elements
   const arrHelp  = [
     "Игра «Угадай работу пидора по фото» v. 1.0.1",
     "Идея принадлежит worstie, реализовал carmack",
@@ -19,11 +20,34 @@
     "!urp help - вызвать справку."
   ];
 
+  // IRC client config block
+
   const auth = {
     key:  fs.readFileSync(__dirname + "/key.pem"),
     cert: fs.readFileSync(__dirname + "/cert.pem"),
     passphrase: fs.readFileSync(__dirname + "/passphrase").toString().trim()
   };
+
+  const ircConfig = {
+    nick: "urp",
+    userName: "urp",
+    password: auth.passphrase,
+    secure: auth,
+    sasl: true,
+    selfSigned: true,
+    certExpired: true,
+    channels: ['#s2ch'],
+    port: 6697,
+    autoRejoin: true,
+    floodProtection: false,
+    floodProtectionDelay: 1000,
+    showErrors: true,
+    retryCount: 3,
+    retryDelay: 2000
+  };
+
+  // IRC client on
+  const client = new irc.Client('chat.freenode.net', 'urp', ircConfig);
 
   let timer   = {start: 0, stop: 0, timeLeft: 0};
   let userList = { block: [], winners: [], losers: [] };
@@ -121,7 +145,7 @@
         let randEntry     = randGenderRow[randMinMax(0, randGenderRow.length - 1)];
         let arrAnswers    = [randEntry.title];
 
-        getRandElemsWoRepeats(4, randGenderRow, randEntry).map((e, i) => arrAnswers.push(e.title));
+        getRandElemsWoRepeats(additionalElems, randGenderRow, randEntry).map((e, i) => arrAnswers.push(e.title));
         arrAnswers = shuffleArray(arrAnswers);
         headers.url = `https://www.avito.ru${randEntry.href}`;
 
@@ -143,27 +167,7 @@
     });
   };
 
-  const client = new irc.Client(
-    'chat.freenode.net',
-    'urp',
-    {
-      nick: "urp",
-      userName: "urp",
-      password: auth.passphrase,
-      secure: auth,
-      sasl: true,
-      selfSigned: true,
-      certExpired: true,
-      channels: ['#s2ch'],
-      port: 6697,
-      autoRejoin: true,
-      floodProtection: false,
-      floodProtectionDelay: 1000,
-      showErrors: true,
-      retryCount: 3,
-      retryDelay: 2000
-    }
-  );
+  // irc message handler
 
   client.addListener('message', function(from, to, message) {
     if (from === "urp") {
