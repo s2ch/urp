@@ -15,7 +15,7 @@
   const arrHelp  = [
     "Игра «Угадай работу пидора по фото» v. 1.0.1",
     "Идея принадлежит worstie, реализовал carmack",
-    "!urp - запустить раунда.",
+    "!urp - запустить раунд.",
     "!urp N - выбрать вариант ответа, где N номер предлагаемых вариантов.",
     "!urp help - вызвать справку."
   ];
@@ -253,6 +253,7 @@
     if ( message.match(/^!urp top\d*$/) ) {
       let cnt = parseInt(message.match(/\d{1,2}/)[0], 10);
 
+      client.say(from, `Топ-${cnt} в руме:`);
       scoreBoard.getTopScore("freenode", "users", cnt).map((e, i) => {
         let k = i+1;
         client.say(from, `${k}). ${e.name}: ${e.score} очков`);
