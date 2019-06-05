@@ -10,9 +10,10 @@
   const scoreBoard = score.scoreBoard;
 
   const gameData = { answer: { index: 0, desc: "" }, answerChoices: {}, photoUrl: {} };
-  const timerNum = 30;
+  const timerNum = 60;
   const arrHelp  = [
     "Игра «Угадай работу пидора по фото» v. 0.0.9",
+    "Идея принадлежит worsty, реализовал carmack",
     "!urp - запустить раунда.",
     "!aurp:N - выбрать вариант ответа, где N номер предлагаемых вариантов.",
     "!urp:help - вызвать справку."
@@ -40,7 +41,6 @@
       while(true) {
         randIndx = Math.floor(Math.random() * elems.length);
         if (indxCollection.indexOf(randIndx) > -1) {
-          i--;
           continue;
         }
 
@@ -59,7 +59,7 @@
   const getResumePageData = () => {
     let headers = {
       'method': 'GET',
-      'url': `https://www.avito.ru/rossiya/rezume?i=1&p=${randMinMax(1, 500)}`,
+      'url': `https://www.avito.ru/rossiya/rezume?i=1&p=${randMinMax(1, 100)}`,
       'headers': {
         'Host': 'www.avito.ru',
         'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:66.0) Gecko/20100101 Firefox/66.0',
@@ -121,7 +121,7 @@
         let randEntry     = randGenderRow[randMinMax(0, randGenderRow.length - 1)];
         let arrAnswers    = [randEntry.title];
 
-        getRandElemsWoRepeats(2, randGenderRow, randEntry).map((e, i) => arrAnswers.push(e.title));
+        getRandElemsWoRepeats(4, randGenderRow, randEntry).map((e, i) => arrAnswers.push(e.title));
         arrAnswers = shuffleArray(arrAnswers);
         headers.url = `https://www.avito.ru${randEntry.href}`;
 
