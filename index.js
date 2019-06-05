@@ -212,7 +212,7 @@
         }, timerNum * 1000);
       } else {
         if ( message.match(/^!urp$/) ) {
-          //client.say(to, `До окончания раунда меньше ${timerNum} секунд.`);
+          client.say(to, `До окончания раунда меньше ${timerNum} секунд.`);
         }
       }
     }
@@ -227,7 +227,7 @@
       }
 
       if (userList.block.indexOf(from) > -1) {
-        //client.say(to, `${from}, жди окончания раунда!`);
+        client.say(to, `${from}, жди окончания раунда!`);
       } else {
         scoreBoard.setNewItem("freenode", "users", from);
         userList.block.push(from);
@@ -244,8 +244,35 @@
       }
     }
 
+    // Help block
     if ( message.match(/^!urp help$/) ) {
       arrHelp.map((e, i) => client.say(to, e));
+    }
+
+    // Stats block
+    if ( message.match(/^!urp top\d*$/) ) {
+      let cnt = parseInt(message.match(/\d{1,2}/)[0], 10);
+
+      scoreBoard.getTopScore("freenode", "users", cnt).map((e, i) => {
+        let k = i+1;
+        client.say(from, `${k}). ${e.name}: ${e.score} очков`);
+      });
+    }
+
+    if ( message.match(/^!urp score$/) ) {
+      let points = scoreBoard.getItemScore("freenode", "users", from);
+      client.say(from, `${from}: ${points} очков`);
+    }
+
+    if ( message.match(/^!urp score (.*[^\s]+)$/) && !message.match(/^!urp score s2ch$/)) {
+      let getName = message.match(/^!urp score (.*[^\s]+)$/)[1];
+      let points  = scoreBoard.getItemScore("freenode", "users", getName);
+      client.say(from, `${getName}: ${points} очков`);
+    }
+
+    if ( message.match(/^!urp score s2ch$/) ) {
+      let points = scoreBoard.getItemScore("freenode", "room", "s2ch");
+      client.say(from, `s2ch: ${points} очков`);
     }
   });
 })();
