@@ -12,11 +12,11 @@
   const gameData = { answer: { index: 0, desc: "" }, answerChoices: {}, photoUrl: {} };
   const timerNum = 60;
   const arrHelp  = [
-    "Игра «Угадай работу пидора по фото» v. 0.0.9",
+    "Игра «Угадай работу пидора по фото» v. 1.0.1",
     "Идея принадлежит worsty, реализовал carmack",
     "!urp - запустить раунда.",
-    "!aurp:N - выбрать вариант ответа, где N номер предлагаемых вариантов.",
-    "!urp:help - вызвать справку."
+    "!aurp N - выбрать вариант ответа, где N номер предлагаемых вариантов.",
+    "!urp help - вызвать справку."
   ];
 
   const auth = {
@@ -216,7 +216,7 @@
     // Time left
     timer.timeLeft = timer.stop - getDateToSec();
 
-    if ( message.match(/^!aurp:\d$/) ) {
+    if ( message.match(/^!aurp \d$/) ) {
       if (timer.start === 0) {
         client.say(to, "Чтобы начать игру используй команду !urp.");
         return;
@@ -240,7 +240,7 @@
       }
     }
 
-    if ( message.match(/^!urp:help$/) ) {
+    if ( message.match(/^!urp help$/) ) {
       arrHelp.map((e, i) => client.say(to, e));
     }
   });
