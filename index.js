@@ -13,9 +13,9 @@
   const timerNum = 60;
   const arrHelp  = [
     "Игра «Угадай работу пидора по фото» v. 1.0.1",
-    "Идея принадлежит worsty, реализовал carmack",
+    "Идея принадлежит worstie, реализовал carmack",
     "!urp - запустить раунда.",
-    "!aurp N - выбрать вариант ответа, где N номер предлагаемых вариантов.",
+    "!urp N - выбрать вариант ответа, где N номер предлагаемых вариантов.",
     "!urp help - вызвать справку."
   ];
 
@@ -216,7 +216,7 @@
     // Time left
     timer.timeLeft = timer.stop - getDateToSec();
 
-    if ( message.match(/^!aurp \d$/) ) {
+    if ( message.match(/^!urp \d$/) ) {
       if (timer.start === 0) {
         client.say(to, "Чтобы начать игру используй команду !urp.");
         return;
