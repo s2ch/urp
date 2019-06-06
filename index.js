@@ -21,7 +21,6 @@
   ];
 
   // IRC client config block
-
   const auth = {
     key:  fs.readFileSync(__dirname + "/key.pem"),
     cert: fs.readFileSync(__dirname + "/cert.pem"),
@@ -212,7 +211,7 @@
         }, timerNum * 1000);
       } else {
         if ( message.match(/^!urp$/) ) {
-          client.say(to, `До окончания раунда меньше ${timerNum} секунд.`);
+          client.say(to, `До окончания раунда меньше ${timer.timeLeft} секунд.`);
         }
       }
     }
