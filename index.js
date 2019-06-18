@@ -11,8 +11,9 @@
   const scoreBoard = score.scoreBoard;
 
   const gameData = { checked: { index: 0, title: "" }, titles: [], photoUrl: "" };
-  const timerNum = 60; // timer value in seconds
+  const timerNum = 20; // timer value in seconds
   const answers = 5; // set the number of possible answers in this variable
+  const botName = "urp";
   const arrHelp  = [
     "Игра «Угадай работу пидора по фото» v. 1.1.0",
     "Идея принадлежит worstie, реализовал carmack",
@@ -29,14 +30,14 @@
   };
 
   const ircConfig = {
-    nick: "urp",
-    userName: "urp",
+    nick: botName,
+    userName: botName,
     password: auth.passphrase,
     secure: auth,
     sasl: true,
     selfSigned: true,
     certExpired: true,
-    channels: ['#carmackTest'],
+    channels: ['#s2ch'],
     port: 6697,
     autoRejoin: true,
     floodProtection: false,
@@ -147,114 +148,123 @@
     });
   };
 
-  let timer   = {start: 0, stop: 0, timeLeft: 0};
+  let timerState = null;
   let userList = { block: [], winners: [], losers: [] };
 
-  client.addListener('message', function(from, to, message) {
-    if (from === "urp") {
+  const callGetGameData = (to) =>{
+    if (!R.isNil(timerState)) {
+      client.say(to, `До конца раунда меньше ${timerNum} секунд...`);
       return;
-    };
+    }
 
-    // Start
-    if ( message.match(/^!urp$/) ) {
-      if (timer.start === 0) {
-        timer.start = getDateToSec();
-        timer.stop  = timer.start + timerNum;
+    getGameData().then( response => {
+      client.say(to, gameData.photoUrl);
+      R.addIndex(R.map)( (e, i) => { client.say(to, `${++i}). ${e}`); }, gameData.titles);
+    });
+  };
 
-        getGameData().then(response => {
-          client.say(to, gameData.photoUrl);
+  const startTimer = (to, gameData) => {
+    callGetGameData(to);
+    if (!R.isNil(timerState)) return;
+    timerState = R.when(R.isNil, R.T)(timerState);
 
-          for (let i = 0, k = 1; i < answers; i++, k++ ) {
-            client.say(to, `${k}). ${gameData.titles[i]}`);
-          }
-        });
+    setTimeout( () => {
+      client.say(to, "Раунд завершён, правильный ответ: ");
+      client.say(to, `${gameData.checked.index}). ${gameData.checked.title}`);
 
-        // Stop
-        setTimeout(function () {
-          client.say(to, "Раунд завершён, правильный ответ: ");
-          client.say(to, `${gameData.checked.index}). ${gameData.checked.title}`);
+      const isBothEmpty = (arr) => R.and(R.isEmpty(arr[0]), R.isEmpty(arr[1]));
+      R.cond([
+        [
+          R.compose(R.not, R.isEmpty, R.prop('winners')),
+          () => client.say(to, `Победители: ${userList.winners.join(', ')}!`)
+        ],
+        [
+          R.compose(R.not, R.isEmpty, R.prop('losers')),
+          () => client.say(to, `Лошары: ${userList.losers.join(', ')}!`)
+        ],
+        [
+          R.compose(isBothEmpty, R.props(['losers', 'winners'])),
+          () => client.say(to, "Чат воздержался!")
+        ]
+      ])(userList);
 
-          if (userList.winners.length > 0) {
-            client.say(to, `Победители: ${userList.winners.join(', ')}!`);
-          }
+      scoreBoard.writeScoreJSON();
+      userList = { block: [], winners: [], losers: [] }; timerState = null;
+    }, timerNum * 1000);
+  };
 
-          if (userList.losers.length > 0) {
-            client.say(to, `Лошары: ${userList.losers.join(', ')}!`);
-          }
+  const pickAnswer = (from, to, message) => {
+    if (R.isNil(timerState)) {
+      client.say(to, "Чтобы начать игру используй команду !urp.");
+      return;
+    }
 
-          if (userList.losers.length === 0 && userList.winners.length === 0) {
-            client.say(to, "Чат воздержался!");
-          }
+    if ( R.find(R.equals(from))(userList.block) ) {
+      client.say(to, `${from}, жди окончания раунда!`);
+      return;
+    }
 
-          timer    = {start: 0, stop: 0, timeLeft: 0};
-          userList = { block: [], winners: [], losers: [] };
+    scoreBoard.setNewItem("freenode", "users", from);
+    userList.block.push(from);
 
-          scoreBoard.writeScoreJSON();
-        }, timerNum * 1000);
-      } else {
-        if ( message.match(/^!urp$/) ) {
-          client.say(to, `До окончания раунда меньше ${timer.timeLeft} секунд.`);
-        }
+    let indx = parseInt(R.match(/\d/, message)[0], 10);
+
+    const appendToUL = R.ifElse(
+      R.equals(true),
+      () => {
+        userList.winners.push(from);
+        scoreBoard.updateItemPlus("freenode", "users", from);
+        scoreBoard.updateItemPlus("freenode", "room", "s2ch");
+      },
+      () => {
+        userList.losers.push(from);
+        scoreBoard.updateItemMinus("freenode", "users", from);
+        scoreBoard.updateItemMinus("freenode", "room", "s2ch");
       }
-    }
+    );
 
-    // Time left
-    timer.timeLeft = timer.stop - getDateToSec();
+    appendToUL(R.and(indx, gameData.checked.index));
+  };
 
-    if ( message.match(/^!urp \d$/) ) {
-      if (timer.start === 0) {
-        client.say(to, "Чтобы начать игру используй команду !urp.");
-        return;
-      }
+  const getScoreByName = (from, message) => {
+    let getName = R.match(/^!urp score (.*[^\s]+)$/, R.trim(message))[1];
+    let points  = scoreBoard.getItemScore("freenode", "users", getName);
 
-      if (userList.block.indexOf(from) > -1) {
-        client.say(to, `${from}, жди окончания раунда!`);
-      } else {
-        scoreBoard.setNewItem("freenode", "users", from);
-        userList.block.push(from);
+    R.cond([
+      [ R.isNil,      () => client.say(from, `Юзера ${getName} в таблице не найдено.`)],
+      [ R.is(Number), () => client.say(from, `${getName}: ${points} очков`)]
+    ])(points);
+  };
 
-        if ( parseInt(message.match(/\d/)[0], 10) === gameData.checked.index) {
-          userList.winners.push(from);
-          scoreBoard.updateItemPlus("freenode", "users", from);
-          scoreBoard.updateItemPlus("freenode", "room", "s2ch");
-        } else {
-          userList.losers.push(from);
-          scoreBoard.updateItemMinus("freenode", "users", from);
-          scoreBoard.updateItemMinus("freenode", "room", "s2ch");
-        }
-      }
-    }
+  const getTopByN = (from, message) => {
+    let cnt = parseInt(message.match(/\d{1,2}/)[0], 10);
 
-    // Help block
-    if ( message.match(/^!urp help$/) ) {
-      arrHelp.map((e, i) => client.say(to, e));
-    }
+    client.say(from, `Топ-${cnt} в руме:`);
+    scoreBoard.getTopScore("freenode", "users", cnt).map((e, i) => {
+      let k = i+1;
+      client.say(from, `${k}). ${e.name}: ${e.score} очков`);
+    });
+  };
 
-    // Stats block
-    if ( message.match(/^!urp top\d*$/) ) {
-      let cnt = parseInt(message.match(/\d{1,2}/)[0], 10);
+  const getUserScore = (from, message) => {
+    let points = scoreBoard.getItemScore("freenode", "users", from);
+    client.say(from, `${from}: ${points} очков`);
+  };
 
-      client.say(from, `Топ-${cnt} в руме:`);
-      scoreBoard.getTopScore("freenode", "users", cnt).map((e, i) => {
-        let k = i+1;
-        client.say(from, `${k}). ${e.name}: ${e.score} очков`);
-      });
-    }
+  const getRoomScore = (from, message) => {
+    let points = scoreBoard.getItemScore("freenode", "room", "s2ch");
+    client.say(from, `s2ch: ${points} очков`);
+  };
 
-    if ( message.match(/^!urp score$/) ) {
-      let points = scoreBoard.getItemScore("freenode", "users", from);
-      client.say(from, `${from}: ${points} очков`);
-    }
-
-    if ( message.match(/^!urp score (.*[^\s]+)$/) && !message.match(/^!urp score s2ch$/)) {
-      let getName = message.match(/^!urp score (.*[^\s]+)$/)[1];
-      let points  = scoreBoard.getItemScore("freenode", "users", getName);
-      client.say(from, `${getName}: ${points} очков`);
-    }
-
-    if ( message.match(/^!urp score s2ch$/) ) {
-      let points = scoreBoard.getItemScore("freenode", "room", "s2ch");
-      client.say(from, `s2ch: ${points} очков`);
-    }
+  client.addListener('message', function(from, to, message) {
+    R.cond([
+      [R.test(/^!urp$/),        () => startTimer(to, gameData)],
+      [R.test(/^!urp help$/),   () => R.map(e => client.say(to, e), arrHelp)],
+      [R.test(/^!urp \d$/),     () => pickAnswer(from, to, message)],
+      [R.test(/^!urp top\d*/),  () => getTopByN(from, message)],
+      [R.test(/^!urp score$/),  () => getUserScore(from, message)],
+      [R.test(/^!urp room score$/),   () => getRoomScore(from, message)],
+      [R.test(/^!urp score .*[^\s]+$/), () => getScoreByName(from, message)]
+    ])(R.trim(message));
   });
 })();
