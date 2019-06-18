@@ -248,7 +248,11 @@
 
   const getUserScore = (from, message) => {
     let points = scoreBoard.getItemScore("freenode", "users", from);
-    client.say(from, `${from}: ${points} очков`);
+
+    R.cond([
+      [ R.isNil,      () => client.say(from, `Юзера ${from} в таблице не найдено.`)],
+      [ R.is(Number), () => client.say(from, `${from}: ${points} очков`)]
+    ])(points);
   };
 
   const getRoomScore = (from, message) => {
