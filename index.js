@@ -11,7 +11,7 @@
   const scoreBoard = score.scoreBoard;
 
   const gameData = { checked: { index: 0, title: "" }, titles: [], photoUrl: "" };
-  const timerNum = 15; // timer value in seconds
+  const timerNum = 60; // timer value in seconds
   const answers = 5; // set the number of possible answers in this variable
   const botName = "urp";
   const arrHelp  = [
