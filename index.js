@@ -11,7 +11,7 @@
   const scoreBoard = score.scoreBoard;
 
   const gameData = { checked: { index: 0, title: "" }, titles: [], photoUrl: "" };
-  const timerNum = 60; // timer value in seconds
+  const timerNum = 15; // timer value in seconds
   const answers = 5; // set the number of possible answers in this variable
   const botName = "urp";
   const arrHelp  = [
@@ -37,7 +37,7 @@
     sasl: true,
     selfSigned: true,
     certExpired: true,
-    channels: ['#s2ch'],
+    channels: ['#carmackTest'],
     port: 6697,
     autoRejoin: true,
     floodProtection: false,
@@ -209,21 +209,24 @@
 
     let indx = parseInt(R.match(/\d/, message)[0], 10);
 
-    const appendToUL = R.ifElse(
-      R.equals(true),
-      () => {
-        userList.winners.push(from);
-        scoreBoard.updateItemPlus("freenode", "users", from);
-        scoreBoard.updateItemPlus("freenode", "room", "s2ch");
-      },
-      () => {
-        userList.losers.push(from);
-        scoreBoard.updateItemMinus("freenode", "users", from);
-        scoreBoard.updateItemMinus("freenode", "room", "s2ch");
-      }
-    );
-
-    appendToUL(R.and(indx, gameData.checked.index));
+    R.cond([
+      [
+        R.equals(true),
+        () => {
+          userList.winners.push(from);
+          scoreBoard.updateItemPlus("freenode", "users", from);
+          scoreBoard.updateItemPlus("freenode", "room", "s2ch");
+        }
+      ],
+      [
+        R.equals(false),
+        () => {
+          userList.losers.push(from);
+          scoreBoard.updateItemMinus("freenode", "users", from);
+          scoreBoard.updateItemMinus("freenode", "room", "s2ch");
+        }
+      ]
+    ])(R.equals(indx, gameData.checked.index));
   };
 
   const getScoreByName = (from, message) => {
