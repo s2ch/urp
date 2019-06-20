@@ -10,10 +10,12 @@
   const score      = require("./lib/game_score");
   const scoreBoard = score.scoreBoard;
 
-  const gameData = { checked: { index: 0, title: "" }, titles: [], photoUrl: "" };
-  const timerNum = 60; // timer value in seconds
-  const answers = 5; // set the number of possible answers in this variable
-  const botName = "urp";
+  const gameData    = { checked: { index: 0, title: "" }, titles: [], photoUrl: "" };
+  const timerNum    = 60; // timer value in seconds
+  const addScore    = 3; // add score
+  const reduceScore = 1; // reduce score
+  const answers     = 5; // set the number of possible answers in this variable
+  const botName     = "urp";
   const arrHelp  = [
     "Игра «Угадай работу пидора по фото» v. 1.1.0",
     "Идея принадлежит worstie, реализовал carmack",
@@ -215,16 +217,16 @@
         R.equals(true),
         () => {
           userList.winners.push(from);
-          scoreBoard.updateItemPlus("freenode", "users", from);
-          scoreBoard.updateItemPlus("freenode", "room", "s2ch");
+          scoreBoard.updateItemPlus("freenode", "users", from, addScore);
+          scoreBoard.updateItemPlus("freenode", "room", "s2ch", addScore);
         }
       ],
       [
         R.equals(false),
         () => {
           userList.losers.push(from);
-          scoreBoard.updateItemMinus("freenode", "users", from);
-          scoreBoard.updateItemMinus("freenode", "room", "s2ch");
+          scoreBoard.updateItemMinus("freenode", "users", from, reduceScore);
+          scoreBoard.updateItemMinus("freenode", "room", "s2ch", reduceScore);
         }
       ]
     ])(R.equals(indx, gameData.checked.index));
