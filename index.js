@@ -18,7 +18,8 @@
     "Игра «Угадай работу пидора по фото» v. 1.1.0",
     "Идея принадлежит worstie, реализовал carmack",
     "!urp - запустить раунд.",
-    "!urp N - выбрать вариант ответа, где N номер предлагаемых вариантов.",
+    "!urp n - выбрать вариант ответа.",
+    "!urp rand(om) - вариант наугад.",
     "!urp help - вызвать справку."
   ];
 
@@ -193,7 +194,7 @@
     }, timerNum * 1000);
   };
 
-  const pickAnswer = (from, to, message) => {
+  const pickAnswer = (from, to, message, indx) => {
     if (R.isNil(timerState)) {
       client.say(to, "Чтобы начать игру используй команду !urp.");
       return;
@@ -207,7 +208,7 @@
     scoreBoard.setNewItem("freenode", "users", from);
     userList.block.push(from);
 
-    let indx = parseInt(R.match(/\d/, message)[0], 10);
+    indx = indx === undefined ? parseInt(R.match(/\d/, message)[0], 10) : indx;
 
     R.cond([
       [
@@ -268,6 +269,7 @@
       [R.test(/^!urp$/),        () => startTimer(to, gameData)],
       [R.test(/^!urp help$/),   () => R.map(e => client.say(to, e), arrHelp)],
       [R.test(/^!urp \d$/),     () => pickAnswer(from, to, message)],
+      [R.test(/^!urp rand(om)?$/), () => pickAnswer(from, to, message, randMinMax(1, answers))],
       [R.test(/^!urp top\d*/),  () => getTopByN(from, message)],
       [R.test(/^!urp score$/),  () => getUserScore(from, message)],
       [R.test(/^!urp room score$/),   () => getRoomScore(from, message)],
